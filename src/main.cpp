@@ -1,5 +1,6 @@
 #include "listaCompras.h"
 #include "similaridade.h"
+#include "recomendacao.h"
 #include <stdio.h>
 
 int main() {
@@ -24,6 +25,7 @@ int main() {
                (int) clientes.size(), (int) produtos.size());
     }
 
+    //Atividade 1
     vector<string> codigosParaTestar;
     int totalParaTestar = (clientes.size() < 3) ? (int) clientes.size() : 3;
     for (int i = 0; i < totalParaTestar; i++) {
@@ -32,7 +34,7 @@ int main() {
 
     exibirClientes(codigosParaTestar, mapaClientes, produtos, listaDeCompras);
 
-  
+   //Atividade 2
     int n = clientes.size();
     int m = produtos.size();
 
@@ -67,6 +69,47 @@ int main() {
         }
     } else {
         cout << "Nao ha clientes suficientes para calcular similaridade.\n";
+    }
+
+    //Atividade 3
+    int k = 5; 
+
+    if (n >= 1) {
+        vector<Recomendacao> recomendacoes1;
+        gerarRecomendacoes(clienteTeste1, k, s, a, n, m, recomendacoes1);
+
+        cout << "\nRecomendacoes para o cliente [" << clienteTeste1
+             << "] (Codigo Original: " << clientes[clienteTeste1] << "):\n";
+
+        int totalRecomendacoes1 = recomendacoes1.size();
+        if (totalRecomendacoes1 == 0) {
+            cout << "  (nenhuma recomendacao disponivel para este cliente)\n";
+        } else {
+            for (int i = 0; i < totalRecomendacoes1; i++) {
+                int idProduto = recomendacoes1[i].idProduto;
+                cout << "  - " << produtos[idProduto]
+                     << " (score: " << recomendacoes1[i].score << ")\n";
+            }
+        }
+    }
+
+    if (n >= 2) {
+        vector<Recomendacao> recomendacoes2;
+        gerarRecomendacoes(clienteTeste2, k, s, a, n, m, recomendacoes2);
+
+        cout << "\nRecomendacoes para o cliente [" << clienteTeste2
+             << "] (Codigo Original: " << clientes[clienteTeste2] << "):\n";
+
+        int totalRecomendacoes2 = recomendacoes2.size();
+        if (totalRecomendacoes2 == 0) {
+            cout << "  (nenhuma recomendacao disponivel para este cliente)\n";
+        } else {
+            for (int i = 0; i < totalRecomendacoes2; i++) {
+                int idProduto = recomendacoes2[i].idProduto;
+                cout << "  - " << produtos[idProduto]
+                     << " (score: " << recomendacoes2[i].score << ")\n";
+            }
+        }
     }
 
     return 0;
