@@ -2,39 +2,66 @@
 #include "similaridade.h"
 #include "recomendacao.h"
 #include <stdio.h>
+#include <iostream>
+#include <cstdlib>
 
-int main() {
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
+        cout << "Uso: " << argv[0] << " <instancia.csv> <entrega:1|2|3> [k]\n";
+        cout << "  entrega=1 -> so roda a Atividade 1 (leitura)\n";
+        cout << "  entrega=2 -> roda Atividades 1 e 2 (leitura + similaridade)\n";
+        cout << "  entrega=3 -> roda Atividades 1, 2 e 3 (precisa de k)\n";
+        return 1;
+    }
+
+    char* instancia = argv[1];
+    int entrega = atoi(argv[2]);
+
+    if (entrega == 3 && argc != 4) {
+        cout << "Erro: para entrega=3 (Recomendacao), informe tambem o k.\n";
+        cout << "Uso: " << argv[0] << " <instancia.csv> 3 <k>\n";
+        return 1;
+    }
+
+    int k = 5; 
+    if (argc == 4) {
+        k = atoi(argv[3]);
+    }
+
     vector<string> clientes;
     map<string, int> mapaClientes;
     vector<string> produtos;
     map<int, int> mapaProdutos;
     vector<vector<int>> listaDeCompras;
 
-    int quantidade;
-    printf("Quantos arquivos de compras deseja carregar? ");
-    scanf("%d", &quantidade);
+    cout << "Carregando o arquivo: " << instancia << "...\n";
+    gerarLista(instancia, clientes, mapaClientes, produtos, mapaProdutos, listaDeCompras);
 
-    char caminho[512];
-    for (int i = 0; i < quantidade; i++) {
-        printf("Caminho do arquivo %d de %d: ", i + 1, quantidade);
-        scanf("%s", caminho);
+    printf("  -> Carregado. Total de clientes: %d | Total de produtos: %d\n",
+           (int) clientes.size(), (int) produtos.size());
 
-        gerarLista(caminho, clientes, mapaClientes, produtos, mapaProdutos, listaDeCompras);
-
-        printf("  -> Carregado. Total de clientes ate agora: %d | Total de produtos ate agora: %d\n",
-               (int) clientes.size(), (int) produtos.size());
-    }
-
-    //Atividade 1
     vector<string> codigosParaTestar;
-    int totalParaTestar = (clientes.size() < 3) ? (int) clientes.size() : 3;
+    int totalParaTestar = ((int) clientes.size() < 3) ? (int) clientes.size() : 3;
     for (int i = 0; i < totalParaTestar; i++) {
         codigosParaTestar.push_back(clientes[i]);
     }
 
+    // ==========================================
+    // Atividade 1 -- roda sempre que entrega >= 1
+    // ==========================================
+    cout << "\n--- ATIVIDADE 1 ---\n";
     exibirClientes(codigosParaTestar, mapaClientes, produtos, listaDeCompras);
 
-   //Atividade 2
+    if (entrega == 1) {
+        return 0; // para por aqui, como pedido
+    }
+
+    // ==========================================
+    // Atividade 2 -- roda se entrega >= 2
+    // ==========================================
+    cout << "\n--- ATIVIDADE 2 ---\n";
     int n = clientes.size();
     int m = produtos.size();
 
@@ -71,45 +98,36 @@ int main() {
         cout << "Nao ha clientes suficientes para calcular similaridade.\n";
     }
 
-    //Atividade 3
-    int k = 5; 
-
-    if (n >= 1) {
-        vector<Recomendacao> recomendacoes1;
-        gerarRecomendacoes(clienteTeste1, k, s, a, n, m, recomendacoes1);
-
-        cout << "\nRecomendacoes para o cliente [" << clienteTeste1
-             << "] (Codigo Original: " << clientes[clienteTeste1] << "):\n";
-
-        int totalRecomendacoes1 = recomendacoes1.size();
-        if (totalRecomendacoes1 == 0) {
-            cout << "  (nenhuma recomendacao disponivel para este cliente)\n";
-        } else {
-            for (int i = 0; i < totalRecomendacoes1; i++) {
-                int idProduto = recomendacoes1[i].idProduto;
-                cout << "  - " << produtos[idProduto]
-                     << " (score: " << recomendacoes1[i].score << ")\n";
-            }
-        }
+    if (entrega == 2) {
+        return 0; // para por aqui
     }
 
-    if (n >= 2) {
-        vector<Recomendacao> recomendacoes2;
-        gerarRecomendacoes(clienteTeste2, k, s, a, n, m, recomendacoes2);
+    // ==========================================
+    // Atividade 3 -- so roda se entrega == 3 (ja validamos que k existe)
+    // ==========================================
+    cout << "\n--- ATIVIDADE 3 (k=" << k << ") ---\n";
 
-        cout << "\nRecomendacoes para o cliente [" << clienteTeste2
-             << "] (Codigo Original: " << clientes[clienteTeste2] << "):\n";
+    for (int i = 0; i < totalParaTestar; i++) {
+        string codOriginal = codigosParaTestar[i];
+        int idInterno = mapaClientes[codOriginal];
 
-        int totalRecomendacoes2 = recomendacoes2.size();
-        if (totalRecomendacoes2 == 0) {
+        vector<Recomendacao> recomendacoes;
+        gerarRecomendacoes(idInterno, k, s, a, n, m, recomendacoes);
+
+        cout << "Recomendacoes para o cliente [" << idInterno
+             << "] (Codigo Original: " << codOriginal << "):\n";
+
+        int totalRecomendacoes = recomendacoes.size();
+        if (totalRecomendacoes == 0) {
             cout << "  (nenhuma recomendacao disponivel para este cliente)\n";
         } else {
-            for (int i = 0; i < totalRecomendacoes2; i++) {
-                int idProduto = recomendacoes2[i].idProduto;
+            for (int j = 0; j < totalRecomendacoes; j++) {
+                int idProduto = recomendacoes[j].idProduto;
                 cout << "  - " << produtos[idProduto]
-                     << " (score: " << recomendacoes2[i].score << ")\n";
+                     << " (score: " << recomendacoes[j].score << ")\n";
             }
         }
+        cout << "\n";
     }
 
     return 0;
