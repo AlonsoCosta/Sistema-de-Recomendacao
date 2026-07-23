@@ -1,17 +1,21 @@
-#include <vector>
-using namespace std;
-
 #ifndef SIMILARIDADE_H
 #define SIMILARIDADE_H
 
-void matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m, vector<vector<int>>& a);
+#include <vector>
+using namespace std;
 
-void matrizTransposta(vector<vector<int>>& a, vector<vector<int>>& at, int n, int m);
+int** matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m);
 
-void multiplicarMatrizes(vector<vector<int>>& a, vector<vector<int>>& at, int n, int m, vector<vector<int>>& I);
+int** matrizTransposta(int** a, int n, int m);
 
-void calcularMatrizes(vector<vector<int>>& I, vector<vector<int>>& listaDeCompras, int n, vector<vector<double>>& s);
+int** multiplicarMatrizes(int** a, int** at, int n, int m);
 
-int clienteSimilares(vector<vector<double>>& s, int cliente, int n);
+double** calcularMatrizes(int** I, vector<vector<int>>& listaDeCompras, int n);
+
+int clienteSimilares(double** s, int cliente, int n);
+
+void liberarMatrizInt(int** matriz, int linhas);
+
+void liberarMatrizDouble(double** matriz, int linhas);
 
 #endif

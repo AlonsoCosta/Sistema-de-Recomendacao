@@ -8,11 +8,12 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
+
     if (argc < 3) {
         cout << "Uso: " << argv[0] << " <instancia.csv> <entrega:1|2|3> [k]\n";
-        cout << "  entrega=1 -> so roda a Atividade 1 (leitura)\n";
-        cout << "  entrega=2 -> roda Atividades 1 e 2 (leitura + similaridade)\n";
-        cout << "  entrega=3 -> roda Atividades 1, 2 e 3 (precisa de k)\n";
+        cout << "  entrega=1 -> Lista de Compras\n";
+        cout << "  entrega=2 -> Lista de Compras e Similaridade\n";
+        cout << "  entrega=3 -> Lista de Compras, Similaridade e Recomendacao\n";
         return 1;
     }
 
@@ -25,7 +26,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    int k = 5; 
+    int k = 5;
     if (argc == 4) {
         k = atoi(argv[3]);
     }
@@ -48,32 +49,21 @@ int main(int argc, char* argv[]) {
         codigosParaTestar.push_back(clientes[i]);
     }
 
-    // ==========================================
-    // Atividade 1 -- roda sempre que entrega >= 1
-    // ==========================================
-    cout << "\n--- ATIVIDADE 1 ---\n";
+    cout << "\n--- LISTA DE COMPRAS ---\n";
     exibirClientes(codigosParaTestar, mapaClientes, produtos, listaDeCompras);
 
     if (entrega == 1) {
-        return 0; // para por aqui, como pedido
+        return 0;
     }
 
-    // ==========================================
-    // Atividade 2 -- roda se entrega >= 2
-    // ==========================================
-    cout << "\n--- ATIVIDADE 2 ---\n";
+    cout << "\n--- SIMILARIDADE ---\n";
     int n = clientes.size();
     int m = produtos.size();
 
-    vector<vector<int>> a;
-    vector<vector<int>> at;
-    vector<vector<int>> I;
-    vector<vector<double>> s;
-
-    matrizCompras(listaDeCompras, n, m, a);
-    matrizTransposta(a, at, n, m);
-    multiplicarMatrizes(a, at, n, m, I);
-    calcularMatrizes(I, listaDeCompras, n, s);
+    int** a = matrizCompras(listaDeCompras, n, m);
+    int** at = matrizTransposta(a, n, m);
+    int** I = multiplicarMatrizes(a, at, n, m);
+    double** s = calcularMatrizes(I, listaDeCompras, n);
 
     int clienteTeste1 = 0;
     int clienteTeste2 = 1;
@@ -99,13 +89,14 @@ int main(int argc, char* argv[]) {
     }
 
     if (entrega == 2) {
-        return 0; // para por aqui
+        liberarMatrizInt(a, n);
+        liberarMatrizInt(at, m);
+        liberarMatrizInt(I, n);
+        liberarMatrizDouble(s, n);
+        return 0;
     }
 
-    // ==========================================
-    // Atividade 3 -- so roda se entrega == 3 (ja validamos que k existe)
-    // ==========================================
-    cout << "\n--- ATIVIDADE 3 (k=" << k << ") ---\n";
+    cout << "\n--- RECOMENDACOES (k=" << k << ") ---\n";
 
     for (int i = 0; i < totalParaTestar; i++) {
         string codOriginal = codigosParaTestar[i];
@@ -129,6 +120,11 @@ int main(int argc, char* argv[]) {
         }
         cout << "\n";
     }
+
+    liberarMatrizInt(a, n);
+    liberarMatrizInt(at, m);
+    liberarMatrizInt(I, n);
+    liberarMatrizDouble(s, n);
 
     return 0;
 }

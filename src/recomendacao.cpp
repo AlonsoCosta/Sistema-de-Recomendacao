@@ -1,7 +1,7 @@
 #include "recomendacao.h"
 #include <algorithm>
 
-void identificarVizinhos(vector<vector<double>>& S, int c, int n, vector<int>& vizinhos) {
+void identificarVizinhos(double** S, int c, int n, vector<int>& vizinhos) {
     for (int s = 0; s < n; s++) {
         if (s != c && S[c][s] < 1.0) {
             vizinhos.push_back(s);
@@ -13,7 +13,7 @@ bool compararPorScore(const Recomendacao& a, const Recomendacao& b) {
     return a.score < b.score;
 }
 
-void gerarRecomendacoes(int c, int k, vector<vector<double>>& S, vector<vector<int>>& A,
+void gerarRecomendacoes(int c, int k, double** S, int** A,
     int n, int m, vector<Recomendacao>& recomendacoesFinais) {
 
     vector<int> vizinhos;

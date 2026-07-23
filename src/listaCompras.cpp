@@ -3,6 +3,7 @@
 
 void gerarLista(char caminho[], vector<string>& clientes, map<string, int>& mapaClientes,
     vector<string>& produtos, map<int, int>& mapaProdutos, vector<vector<int>>& listaDeCompras) {
+
     Produto p;
     FILE* arquivo;
     char linhaCabecalho[512];
@@ -16,45 +17,30 @@ void gerarLista(char caminho[], vector<string>& clientes, map<string, int>& mapa
     fgets(linhaCabecalho, sizeof(linhaCabecalho), arquivo);
 
     while (fscanf(arquivo, "%d,%8[^,],%d,%49[^\n]\n",
-                  &p.data, p.codeCliente, &p.codeProduto, p.nomeProduto) == 4) {
+                &p.data, p.codeCliente, &p.codeProduto, p.nomeProduto) == 4) {
 
         string codCliente(p.codeCliente);
 
+        int indiceCliente;
         if (mapaClientes.find(codCliente) == mapaClientes.end()) {
-            int novoIndice = clientes.size();
+            indiceCliente = clientes.size();
             clientes.push_back(codCliente);
-            mapaClientes[codCliente] = novoIndice;
+            mapaClientes[codCliente] = indiceCliente;
+
+            vector<int> listaVazia;
+            listaDeCompras.push_back(listaVazia);
+        } else {
+            indiceCliente = mapaClientes[codCliente];
         }
 
+        int indiceProduto;
         if (mapaProdutos.find(p.codeProduto) == mapaProdutos.end()) {
-            int novoIndice = produtos.size();
+            indiceProduto = produtos.size();
             produtos.push_back(string(p.nomeProduto));
-            mapaProdutos[p.codeProduto] = novoIndice;
+            mapaProdutos[p.codeProduto] = indiceProduto;
+        } else {
+            indiceProduto = mapaProdutos[p.codeProduto];
         }
-    }
-    fclose(arquivo);
-
-    int totalClientes = clientes.size();
-    for (int i = 0; i < totalClientes; i++) {
-        vector<int> listaVazia;
-        listaDeCompras.push_back(listaVazia);
-    }
-
-    arquivo = fopen(caminho, "r");
-    if (arquivo == NULL) {
-        perror("Erro ao reabrir o arquivo");
-        return;
-    }
-
-    fgets(linhaCabecalho, sizeof(linhaCabecalho), arquivo);
-
-    while (fscanf(arquivo, "%d,%8[^,],%d,%49[^\n]\n",
-                  &p.data, p.codeCliente, &p.codeProduto, p.nomeProduto) == 4) {
-
-        string codCliente(p.codeCliente);
-
-        int indiceCliente = mapaClientes[codCliente];
-        int indiceProduto = mapaProdutos[p.codeProduto];
 
         int jaComprou = 0;
         int totalAtual = listaDeCompras[indiceCliente].size();
@@ -69,6 +55,7 @@ void gerarLista(char caminho[], vector<string>& clientes, map<string, int>& mapa
             listaDeCompras[indiceCliente].push_back(indiceProduto);
         }
     }
+
     fclose(arquivo);
 }
 

@@ -1,13 +1,13 @@
 #include "similaridade.h"
+#include <cstdlib>
 
-void matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m, vector<vector<int>>& a) {
-
+int** matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m) {
+    int** a = (int**) malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
-        vector<int> linhaVazia;
+        a[i] = (int*) malloc(m * sizeof(int));
         for (int j = 0; j < m; j++) {
-            linhaVazia.push_back(0);
+            a[i][j] = 0;
         }
-        a.push_back(linhaVazia);
     }
 
     for (int i = 0; i < n; i++) {
@@ -18,16 +18,14 @@ void matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m, vector<vec
             a[i][indiceProduto] = 1;
         }
     }
+
+    return a;
 }
 
-void matrizTransposta(vector<vector<int>>& a, vector<vector<int>>& at, int n, int m) {
-
+int** matrizTransposta(int** a, int n, int m) {
+    int** at = (int**) malloc(m * sizeof(int*));
     for (int i = 0; i < m; i++) {
-        vector<int> linhaVazia;
-        for (int j = 0; j < n; j++) {
-            linhaVazia.push_back(0);
-        }
-        at.push_back(linhaVazia);
+        at[i] = (int*) malloc(n * sizeof(int));
     }
 
     for (int i = 0; i < n; i++) {
@@ -35,16 +33,14 @@ void matrizTransposta(vector<vector<int>>& a, vector<vector<int>>& at, int n, in
             at[j][i] = a[i][j];
         }
     }
+
+    return at;
 }
 
-void multiplicarMatrizes(vector<vector<int>>& a, vector<vector<int>>& at, int n, int m, vector<vector<int>>& I) {
-
+int** multiplicarMatrizes(int** a, int** at, int n, int m) {
+    int** I = (int**) malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
-        vector<int> linhaVazia;
-        for (int j = 0; j < n; j++) {
-            linhaVazia.push_back(0);
-        }
-        I.push_back(linhaVazia);
+        I[i] = (int*) malloc(n * sizeof(int));
     }
 
     for (int i = 0; i < n; i++) {
@@ -52,22 +48,20 @@ void multiplicarMatrizes(vector<vector<int>>& a, vector<vector<int>>& at, int n,
             int soma = 0;
 
             for (int k = 0; k < m; k++) {
-                soma = soma + a[i][k]  * at[k][j];
+                soma = soma + a[i][k] * at[k][j];
             }
 
             I[i][j] = soma;
         }
     }
+
+    return I;
 }
 
-void calcularMatrizes(vector<vector<int>>& I, vector<vector<int>>& listaDeCompras, int n, vector<vector<double>>& s) {
-
+double** calcularMatrizes(int** I, vector<vector<int>>& listaDeCompras, int n) {
+    double** s = (double**) malloc(n * sizeof(double*));
     for (int i = 0; i < n; i++) {
-        vector<double> linhaVazia;
-        for(int j = 0; j < n; j++) {
-            linhaVazia.push_back(0.0);
-        }
-        s.push_back(linhaVazia);
+        s[i] = (double*) malloc(n * sizeof(double));
     }
 
     for (int i = 0; i < n; i++) {
@@ -80,11 +74,12 @@ void calcularMatrizes(vector<vector<int>>& I, vector<vector<int>>& listaDeCompra
                 s[i][j] = 1.0;
             }
         }
-    } 
+    }
+
+    return s;
 }
 
-int clienteSimilares(vector<vector<double>>& s, int cliente, int n) {
-
+int clienteSimilares(double** s, int cliente, int n) {
     int indiceSimilar = -1;
     double menorValor = 0.0;
     int semCandidato = 1;
@@ -102,4 +97,18 @@ int clienteSimilares(vector<vector<double>>& s, int cliente, int n) {
         }
     }
     return indiceSimilar;
+}
+
+void liberarMatrizInt(int** matriz, int linhas) {
+    for (int i = 0; i < linhas; i++) {
+        free(matriz[i]);
+    }
+    free(matriz);
+}
+
+void liberarMatrizDouble(double** matriz, int linhas) {
+    for (int i = 0; i < linhas; i++) {
+        free(matriz[i]);
+    }
+    free(matriz);
 }
