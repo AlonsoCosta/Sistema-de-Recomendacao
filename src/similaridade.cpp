@@ -22,22 +22,7 @@ int** matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m) {
     return a;
 }
 
-int** matrizTransposta(int** a, int n, int m) {
-    int** at = (int**) malloc(m * sizeof(int*));
-    for (int i = 0; i < m; i++) {
-        at[i] = (int*) malloc(n * sizeof(int));
-    }
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            at[j][i] = a[i][j];
-        }
-    }
-
-    return at;
-}
-
-int** multiplicarMatrizes(int** a, int** at, int n, int m) {
+int** intersecaoNaive(int** a, int n, int m) {
     int** I = (int**) malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
         I[i] = (int*) malloc(n * sizeof(int));
@@ -48,10 +33,32 @@ int** multiplicarMatrizes(int** a, int** at, int n, int m) {
             int soma = 0;
 
             for (int k = 0; k < m; k++) {
-                soma = soma + a[i][k] * at[k][j];
+                soma = soma + a[i][k] * a[j][k];
             }
 
             I[i][j] = soma;
+        }
+    }
+
+    return I;
+}
+
+int** intersecaoEficiente(int** a, int n, int m) {
+    int** I = (int**) malloc(n * sizeof(int*));
+    for (int i = 0; i < n; i++) {
+        I[i] = (int*) malloc(n * sizeof(int));
+    }
+
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            int soma = 0;
+
+            for (int k = 0; k < m; k++) {
+                soma = soma + a[i][k] * a[j][k];
+            }
+
+            I[i][j] = soma;
+            I[j][i] = soma;
         }
     }
 

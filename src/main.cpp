@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 
 using namespace std;
 
@@ -61,8 +62,27 @@ int main(int argc, char* argv[]) {
     int m = produtos.size();
 
     int** a = matrizCompras(listaDeCompras, n, m);
-    int** at = matrizTransposta(a, n, m);
-    int** I = multiplicarMatrizes(a, at, n, m);
+
+    cout << "\n- BENCHMARK (n=" << n << ", m=" << m << ")\n";
+
+    clock_t inicioNaive = clock();
+    int** resultadoNaive = intersecaoNaive(a, n, m);
+    clock_t fimNaive = clock();
+    double tempoNaive = double(fimNaive - inicioNaive) / CLOCKS_PER_SEC;
+    cout << "Tempo (Naive):     " << tempoNaive << " segundos\n";
+    liberarMatrizInt(resultadoNaive, n);
+
+    clock_t inicioEficiente = clock();
+    int** I = intersecaoEficiente(a, n, m);
+    clock_t fimEficiente = clock();
+    double tempoEficiente = double(fimEficiente - inicioEficiente) / CLOCKS_PER_SEC;
+    cout << "Tempo (Eficiente): " << tempoEficiente << " segundos\n";
+
+    if (tempoEficiente > 0.0) {
+        cout << "Speedup: " << (tempoNaive / tempoEficiente) << "x\n";
+    }
+    cout << "\n";
+
     double** s = calcularMatrizes(I, listaDeCompras, n);
 
     int clienteTeste1 = 0;
@@ -90,7 +110,6 @@ int main(int argc, char* argv[]) {
 
     if (entrega == 2) {
         liberarMatrizInt(a, n);
-        liberarMatrizInt(at, m);
         liberarMatrizInt(I, n);
         liberarMatrizDouble(s, n);
         return 0;
@@ -122,7 +141,6 @@ int main(int argc, char* argv[]) {
     }
 
     liberarMatrizInt(a, n);
-    liberarMatrizInt(at, m);
     liberarMatrizInt(I, n);
     liberarMatrizDouble(s, n);
 
