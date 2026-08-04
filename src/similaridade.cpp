@@ -1,5 +1,6 @@
 #include "similaridade.h"
 #include <cstdlib>
+#include <algorithm>
 
 int** matrizCompras(vector<vector<int>>& listaDeCompras, int n, int m) {
     int** a = (int**) malloc(n * sizeof(int*));
@@ -118,4 +119,91 @@ void liberarMatrizDouble(double** matriz, int linhas) {
         free(matriz[i]);
     }
     free(matriz);
+}
+
+CSR construirCSR(vector<vector<int>>& listaDeCompras, int n, int m) {
+    CSR csr;
+    csr.row_ptr.push_back(0);
+
+    for (int i = 0; i < n; i++) {
+        vector<int> produtosOrdenados = listaDeCompras[i];
+        sort(produtosOrdenados.begin(), produtosOrdenados.end());
+
+        int totalProdutos = produtosOrdenados.size();
+        for (int k = 0; k < totalProdutos; k++) {
+            csr.values.push_back(1.0); 
+            csr.col_index.push_back(produtosOrdenados[k]);
+        }
+
+        csr.row_ptr.push_back((int) csr.values.size());
+    }
+
+    return csr;
+}
+
+CSR intersecaoCSR(CSR& csr, int n) {
+    CSR resultado;
+    resultado.row_ptr.push_back(0);
+    int cont = 0;
+
+    for (int i = 0; i < n; i++) {
+        int inicioI = csr.row_ptr[i];
+        int fimI = csr.row_ptr[i + 1];
+
+        for (int j = 0; j < n; j++) {
+            int inicioJ = csr.row_ptr[j];
+            int fimJ = csr.row_ptr[j + 1];
+            int ponteiroI = inicioI;
+            int ponteiroJ = inicioJ;
+            double soma = 0.0;
+
+            while (ponteiroI < fimI && ponteiroJ < fimJ) {
+                if (csr.col_index[ponteiroI] < csr.col_index[ponteiroJ]) {
+                    ponteiroI++;
+                } else if (csr.col_index[ponteiroI] > csr.col_index[ponteiroJ]) {
+                    ponteiroJ++;
+                } else {
+                    soma = soma + csr.values[ponteiroI] * csr.values[ponteiroJ];
+                    ponteiroI++;
+                    ponteiroJ++;
+                }
+            }
+            if (soma > 0.0) {
+                resultado.values.push_back(soma);
+                resultado.col_index.push_back(j);
+                cont++;
+            }
+        }
+
+        resultado.row_ptr.push_back(cont);
+    }
+
+    return resultado;
+}
+
+double** calcularMatrizesCSR(CSR& I, vector<vector<int>>& listaDeCompras, int n) {
+    double** s = (double**) malloc(n * sizeof(double*));
+    for (int i = 0; i < n; i++) {
+        s[i] = (double*) malloc(n * sizeof(double));
+        for (int j = 0; j < n; j++) {
+            s[i][j] = 1.0; 
+        }
+    }
+
+    for (int i = 0; i < n; i++) {
+        int totalProdutosClienteI = listaDeCompras[i].size();
+        int inicio = I.row_ptr[i];
+        int fim = I.row_ptr[i + 1];
+
+        for (int pos = inicio; pos < fim; pos++) {
+            int j = I.col_index[pos];
+            double intersecao = I.values[pos];
+
+            if (totalProdutosClienteI > 0) {
+                s[i][j] = 1.0 - (intersecao / (double) totalProdutosClienteI);
+            }
+        }
+    }
+
+    return s;
 }

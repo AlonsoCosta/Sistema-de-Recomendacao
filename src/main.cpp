@@ -60,30 +60,57 @@ int main(int argc, char* argv[]) {
     cout << "\n--- SIMILARIDADE ---\n";
     int n = clientes.size();
     int m = produtos.size();
-
     int** a = matrizCompras(listaDeCompras, n, m);
 
-    cout << "\n- BENCHMARK (n=" << n << ", m=" << m << ")\n";
+    cout << "\n--- BENCHMARK (n=" << n << ", m=" << m << ") ---\n";
 
     clock_t inicioNaive = clock();
     int** resultadoNaive = intersecaoNaive(a, n, m);
     clock_t fimNaive = clock();
     double tempoNaive = double(fimNaive - inicioNaive) / CLOCKS_PER_SEC;
-    cout << "Tempo (Naive):     " << tempoNaive << " segundos\n";
+    cout << "Tempo (Naive):        " << tempoNaive << " segundos\n";
     liberarMatrizInt(resultadoNaive, n);
 
     clock_t inicioEficiente = clock();
-    int** I = intersecaoEficiente(a, n, m);
+    int** Idenso = intersecaoEficiente(a, n, m);
     clock_t fimEficiente = clock();
     double tempoEficiente = double(fimEficiente - inicioEficiente) / CLOCKS_PER_SEC;
-    cout << "Tempo (Eficiente): " << tempoEficiente << " segundos\n";
+    cout << "Tempo (Eficiente):     " << tempoEficiente << " segundos\n";
+    liberarMatrizInt(Idenso, n);
 
-    if (tempoEficiente > 0.0) {
-        cout << "Speedup: " << (tempoNaive / tempoEficiente) << "x\n";
+    clock_t inicioConstrucaoCSR = clock();
+    CSR csr = construirCSR(listaDeCompras, n, m);
+    clock_t fimConstrucaoCSR = clock();
+
+    clock_t inicioCSR = clock();
+    CSR Icsr = intersecaoCSR(csr, n);
+    clock_t fimCSR = clock();
+    double tempoCSR = double(fimCSR - inicioCSR) / CLOCKS_PER_SEC;
+    double tempoConstrucaoCSR = double(fimConstrucaoCSR - inicioConstrucaoCSR) / CLOCKS_PER_SEC;
+    cout << "Tempo (CSR - build):   " << tempoConstrucaoCSR << " segundos\n";
+    cout << "Tempo (CSR - produto): " << tempoCSR << " segundos\n";
+
+    if (tempoCSR > 0.0) {
+        cout << "Speedup (Eficiente vs CSR): " << (tempoEficiente / tempoCSR) << "x\n";
+    }
+
+    // Estimativa de memoria: matriz I densa vs I em CSR
+    double memoriaDensaBytes = (double) n * n * sizeof(int);
+    double memoriaCSRBytes = (double) Icsr.values.size() * sizeof(double)
+                            + (double) Icsr.col_index.size() * sizeof(int)
+                            + (double) Icsr.row_ptr.size() * sizeof(int);
+
+    cout << "\nMemoria estimada para a matriz de intersecao I:\n";
+    cout << "  Densa: " << (memoriaDensaBytes / (1024.0 * 1024.0)) << " MB\n";
+    cout << "  CSR:   " << (memoriaCSRBytes / (1024.0 * 1024.0)) << " MB "
+         << "(" << Icsr.values.size() << " elementos nao-nulos de " << ((long long) n * n) << " possiveis)\n";
+
+    if (memoriaCSRBytes > 0.0) {
+        cout << "  Economia: " << (memoriaDensaBytes / memoriaCSRBytes) << "x menos memoria\n";
     }
     cout << "\n";
 
-    double** s = calcularMatrizes(I, listaDeCompras, n);
+    double** s = calcularMatrizesCSR(Icsr, listaDeCompras, n);
 
     int clienteTeste1 = 0;
     int clienteTeste2 = 1;
@@ -110,7 +137,6 @@ int main(int argc, char* argv[]) {
 
     if (entrega == 2) {
         liberarMatrizInt(a, n);
-        liberarMatrizInt(I, n);
         liberarMatrizDouble(s, n);
         return 0;
     }
@@ -141,7 +167,6 @@ int main(int argc, char* argv[]) {
     }
 
     liberarMatrizInt(a, n);
-    liberarMatrizInt(I, n);
     liberarMatrizDouble(s, n);
 
     return 0;
