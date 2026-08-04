@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
     int m = produtos.size();
     int** a = matrizCompras(listaDeCompras, n, m);
 
-    cout << "\n- BENCHMARK (n=" << n << ", m=" << m << ")\n";
+    cout << "\n-> BENCHMARK (n=" << n << ", m=" << m << ") \n";
 
     clock_t inicioNaive = clock();
     int** resultadoNaive = intersecaoNaive(a, n, m);
@@ -91,21 +91,21 @@ int main(int argc, char* argv[]) {
     cout << "Tempo (CSR - produto): " << tempoCSR << " segundos\n";
 
     if (tempoCSR > 0.0) {
-        cout << "Speedup (Tempo Eficiente vs Tempo CSR): " << (tempoEficiente / tempoCSR) << "x\n";
+        cout << "Speedup (Eficiente vs CSR): " << (tempoEficiente / tempoCSR) << "x\n";
     }
 
     double memoriaDensaBytes = (double) n * n * sizeof(int);
-    double memoriaCSRBytes = (double) Icsr.nnz * sizeof(double)
-                            + (double) Icsr.nnz * sizeof(int)
-                            + (double) (n + 1) * sizeof(int);
+    double memoriaCSRBytes = (double) Icsr.values.size() * sizeof(double)
+                            + (double) Icsr.col_index.size() * sizeof(int)
+                            + (double) Icsr.row_ptr.size() * sizeof(int);
 
     cout << "\nMemoria estimada para a matriz de intersecao I:\n";
     cout << "  Densa: " << (memoriaDensaBytes / (1024.0 * 1024.0)) << " MB\n";
     cout << "  CSR:   " << (memoriaCSRBytes / (1024.0 * 1024.0)) << " MB "
-         << "(" << Icsr.nnz << " elementos nao-nulos de " << ((long long) n * n) << " possiveis)\n";
+         << "(" << Icsr.values.size() << " elementos nao-nulos de " << ((long long) n * n) << " possiveis)\n";
 
     if (memoriaCSRBytes > 0.0) {
-        cout << "  Economia de memoria: " << (memoriaDensaBytes / memoriaCSRBytes) << "x menos memoria\n";
+        cout << "  Economia: " << (memoriaDensaBytes / memoriaCSRBytes) << "x menos memoria\n";
     }
     cout << "\n";
 
@@ -137,8 +137,6 @@ int main(int argc, char* argv[]) {
     if (entrega == 2) {
         liberarMatrizInt(a, n);
         liberarMatrizDouble(s, n);
-        liberarCSR(csr);  
-        liberarCSR(Icsr);
         return 0;
     }
 
@@ -169,8 +167,6 @@ int main(int argc, char* argv[]) {
 
     liberarMatrizInt(a, n);
     liberarMatrizDouble(s, n);
-    liberarCSR(csr);  
-    liberarCSR(Icsr);
 
     return 0;
 }

@@ -123,19 +123,7 @@ void liberarMatrizDouble(double** matriz, int linhas) {
 
 CSR construirCSR(vector<vector<int>>& listaDeCompras, int n, int m) {
     CSR csr;
-    
-    int totalElementos = 0;
-    for (int i = 0; i < n; i++) {
-        totalElementos += listaDeCompras[i].size();
-    }
-    
-    csr.nnz = totalElementos;
-    csr.values = (double*) malloc(totalElementos * sizeof(double));
-    csr.col_index = (int*) malloc(totalElementos * sizeof(int));
-    csr.row_ptr = (int*) malloc((n + 1) * sizeof(int));
-
-    csr.row_ptr[0] = 0;
-    int cont = 0;
+    csr.row_ptr.push_back(0);
 
     for (int i = 0; i < n; i++) {
         vector<int> produtosOrdenados = listaDeCompras[i];
@@ -143,12 +131,11 @@ CSR construirCSR(vector<vector<int>>& listaDeCompras, int n, int m) {
 
         int totalProdutos = produtosOrdenados.size();
         for (int k = 0; k < totalProdutos; k++) {
-            csr.values[cont] = 1.0; 
-            csr.col_index[cont] = produtosOrdenados[k];
-            cont++;
+            csr.values.push_back(1.0); 
+            csr.col_index.push_back(produtosOrdenados[k]);
         }
-        
-        csr.row_ptr[i + 1] = cont;
+
+        csr.row_ptr.push_back((int) csr.values.size());
     }
 
     return csr;
@@ -156,13 +143,7 @@ CSR construirCSR(vector<vector<int>>& listaDeCompras, int n, int m) {
 
 CSR intersecaoCSR(CSR& csr, int n) {
     CSR resultado;
-    
-    int capacidade = 1000; 
-    resultado.values = (double*) malloc(capacidade * sizeof(double));
-    resultado.col_index = (int*) malloc(capacidade * sizeof(int));
-    resultado.row_ptr = (int*) malloc((n + 1) * sizeof(int));
-    
-    resultado.row_ptr[0] = 0;
+    resultado.row_ptr.push_back(0);
     int cont = 0;
 
     for (int i = 0; i < n; i++) {
@@ -187,32 +168,17 @@ CSR intersecaoCSR(CSR& csr, int n) {
                     ponteiroJ++;
                 }
             }
-            
             if (soma > 0.0) {
-                if (cont >= capacidade) {
-                    capacidade *= 2; 
-                    resultado.values = (double*) realloc(resultado.values, capacidade * sizeof(double));
-                    resultado.col_index = (int*) realloc(resultado.col_index, capacidade * sizeof(int));
-                }
-                
-                resultado.values[cont] = soma;
-                resultado.col_index[cont] = j;
+                resultado.values.push_back(soma);
+                resultado.col_index.push_back(j);
                 cont++;
             }
         }
-        resultado.row_ptr[i + 1] = cont;
+
+        resultado.row_ptr.push_back(cont);
     }
 
-    resultado.values = (double*) realloc(resultado.values, cont * sizeof(double));
-    resultado.col_index = (int*) realloc(resultado.col_index, cont * sizeof(int));
-    resultado.nnz = cont;
-
     return resultado;
-}
-void liberarCSR(CSR& csr) {
-    if (csr.values != NULL) free(csr.values);
-    if (csr.col_index != NULL) free(csr.col_index);
-    if (csr.row_ptr != NULL) free(csr.row_ptr);
 }
 
 double** calcularMatrizesCSR(CSR& I, vector<vector<int>>& listaDeCompras, int n) {
