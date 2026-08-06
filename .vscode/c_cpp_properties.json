@@ -3,7 +3,9 @@
     {
       "name": "linux-gcc-x64",
       "includePath": [
-        "${workspaceFolder}/**"
+        "${workspaceFolder}/**",
+         "/home/alonso/miniconda3/include/python3.13",
+        "/home/alonso/miniconda3/lib/python3.13/site-packages/pybind11/include"
       ],
       "compilerPath": "/usr/bin/gcc",
       "cStandard": "${default}",
